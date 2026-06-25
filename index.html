@@ -34,9 +34,7 @@ header{
     margin-bottom:20px;
 }
 
-h2{
-    color:#0f172a;
-}
+h2{ color:#0f172a; }
 
 input, select{
     width:100%;
@@ -74,8 +72,8 @@ button:hover{
 }
 
 img{
-    width:100px;
-    height:100px;
+    width:110px;
+    height:110px;
     border-radius:50%;
     object-fit:cover;
     display:none;
@@ -98,7 +96,7 @@ img{
 
 <div class="container">
 
-<!-- STUDENT REGISTRATION -->
+<!-- STUDENT -->
 <div class="card" id="studentBox">
 
 <h2>Student Registration</h2>
@@ -141,7 +139,7 @@ img{
 
 </div>
 
-<!-- TUTOR LOGIN -->
+<!-- TUTOR -->
 <div class="card" id="tutorBox" style="display:none;">
 
 <h2>Tutor Login</h2>
@@ -158,14 +156,14 @@ img{
 
 <script>
 
-// AUTO STUDENT ID
+// AUTO ID
 function generateID(){
-let id = "DPR-" + Date.now();
-document.getElementById("studentId").value = id;
+document.getElementById("studentId").value =
+"DPR-" + Date.now();
 }
 generateID();
 
-// SWITCH PAGES
+// SWITCH
 function showStudent(){
 document.getElementById("studentBox").style.display="block";
 document.getElementById("tutorBox").style.display="none";
@@ -180,21 +178,26 @@ document.getElementById("tutorBox").style.display="block";
 function loadPhoto(event){
 let img = document.getElementById("preview");
 img.src = URL.createObjectURL(event.target.files[0]);
-img.style.display = "block";
+img.style.display="block";
 }
 
-// REGISTER STUDENT (LOCAL STORAGE FOR NOW)
+// REGISTER
 function registerStudent(){
 
+if(!fullName.value || !email.value || !phone.value){
+alert("Please fill all required fields");
+return;
+}
+
 let student = {
-id: document.getElementById("studentId").value,
-name: document.getElementById("fullName").value,
-email: document.getElementById("email").value,
-phone: document.getElementById("phone").value,
-gender: document.getElementById("gender").value,
-institution: document.getElementById("institution").value,
-program: document.getElementById("program").value,
-semester: document.getElementById("semester").value
+id: studentId.value,
+name: fullName.value,
+email: email.value,
+phone: phone.value,
+gender: gender.value,
+institution: institution.value,
+program: program.value,
+semester: semester.value
 };
 
 let data = JSON.parse(localStorage.getItem("students") || "[]");
@@ -203,18 +206,24 @@ localStorage.setItem("students", JSON.stringify(data));
 
 alert("Student Registered Successfully");
 
-document.querySelector("form")?.reset();
+clearForm();
 generateID();
 }
 
-// TUTOR LOGIN (TEMP)
+// CLEAR FORM
+function clearForm(){
+fullName.value="";
+email.value="";
+phone.value="";
+institution.value="";
+password.value="";
+preview.style.display="none";
+}
+
+// TUTOR LOGIN
 function tutorLogin(){
 
-let u = document.getElementById("username").value;
-let p = document.getElementById("tpass").value;
-let c = document.getElementById("access").value;
-
-if(u==="admin" && p==="1234" && c==="DPR2026"){
+if(username.value==="admin" && tpass.value==="1234" && access.value==="DPR2026"){
 alert("Tutor Login Successful");
 } else {
 alert("Invalid Credentials");
