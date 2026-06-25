@@ -1,128 +1,230 @@
-// AUTO ID
-function generateID(){
-document.getElementById("studentId").value =
-"DPR-" + Date.now();
-}
-generateID();
+<!DOCTYPE html>
+<html>
+<head>
+<title>DERKAT APP V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-// SWITCH
-function showStudent(){
-document.getElementById("studentBox").style.display="block";
-document.getElementById("tutorBox").style.display="none";
-}
-
-function showTutor(){
-document.getElementById("studentBox").style.display="none";
-document.getElementById("tutorBox").style.display="block";
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0f172a;
+color:white;
 }
 
-// PHOTO PREVIEW
-function loadPhoto(event){
-let img = document.getElementById("preview");
-img.src = URL.createObjectURL(event.target.files[0]);
-img.style.display="block";
+.container{
+max-width:900px;
+margin:auto;
+padding:20px;
 }
 
-// =======================
-// REGISTER (FIXED)
-// =======================
-function registerStudent(){
-
-if(!fullName.value || !email.value || !phone.value){
-alert("Please fill all required fields");
-return;
+.card{
+background:white;
+color:black;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
 }
 
-let student = {
-action: "register",
-studentId: studentId.value,
-fullName: fullName.value,
-email: email.value,
-phone: phone.value,
-gender: gender.value,
-institution: institution.value,
-program: program.value,
-semester: semester.value,
-password: password.value
-};
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+background:#16a34a;
+color:white;
+width:100%;
+margin-top:10px;
+}
 
-fetch("https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec", {
-method: "POST",
-body: JSON.stringify(student)
+input, select{
+width:100%;
+padding:10px;
+margin:6px 0;
+}
+
+.nav{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+}
+
+.nav button{
+flex:1;
+background:#334155;
+}
+
+.hidden{display:none;}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>DERKAT EDUCATION APP</h2>
+
+<div class="nav">
+<button onclick="show('register')">Register</button>
+<button onclick="show('login')">Login</button>
+<button onclick="show('forgot')">Forgot</button>
+<button onclick="show('tutor')">Tutor</button>
+</div>
+
+<!-- REGISTER -->
+<div class="card" id="registerBox">
+
+<h3>Student Registration</h3>
+
+<input id="fullName" placeholder="Full Name">
+<input id="email" placeholder="Email">
+<input id="phone" placeholder="Phone">
+
+<select id="program">
+<option>Diploma in Clinical Medicine</option>
+<option>Degree in Clinical Medicine</option>
+<option>Nursing</option>
+</select>
+
+<select id="semester">
+<option>1</option><option>2</option><option>3</option>
+<option>4</option><option>5</option><option>6</option>
+</select>
+
+<input id="password" type="password" placeholder="Password">
+
+<button onclick="register()">Register</button>
+
+</div>
+
+<!-- LOGIN -->
+<div class="card hidden" id="loginBox">
+
+<h3>Student Login</h3>
+
+<input id="loginEmail" placeholder="Email">
+<input id="loginPass" type="password" placeholder="Password">
+
+<button onclick="login()">Login</button>
+
+</div>
+
+<!-- FORGOT -->
+<div class="card hidden" id="forgotBox">
+
+<h3>Forgot Password</h3>
+
+<input id="forgotEmail" placeholder="Enter Email">
+<button onclick="forgot()">Reset Password</button>
+
+</div>
+
+<!-- STUDENT DASHBOARD -->
+<div class="card hidden" id="dashBox">
+
+<h3>Student Dashboard</h3>
+<div id="studentData"></div>
+
+<button onclick="logout()">Logout</button>
+
+</div>
+
+<!-- TUTOR PANEL -->
+<div class="card hidden" id="tutorBox">
+
+<h3>Tutor Admin Panel</h3>
+
+<button onclick="loadStudents()">Load Students</button>
+
+<div id="studentsList"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec";
+
+function show(id){
+document.getElementById("registerBox").classList.add("hidden");
+document.getElementById("loginBox").classList.add("hidden");
+document.getElementById("forgotBox").classList.add("hidden");
+document.getElementById("dashBox").classList.add("hidden");
+document.getElementById("tutorBox").classList.add("hidden");
+
+document.getElementById(id+"Box").classList.remove("hidden");
+}
+
+// REGISTER
+function register(){
+fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"register",
+fullName:fullName.value,
+email:email.value,
+phone:phone.value,
+program:program.value,
+semester:semester.value,
+password:password.value
 })
-.then(res => res.json())
-.then(data => {
-
-if(data.status === "success"){
-alert("Registration Successful!\nYour Student ID: " + data.studentId);
-clearForm();
-generateID();
-} else {
-alert("Registration failed");
-}
-
-})
-.catch(error => {
-alert("Connection error");
-console.log(error);
+}).then(r=>r.json()).then(d=>{
+alert("Registered: "+d.studentId);
 });
-
 }
 
-// =======================
-// LOGIN (NEW FIXED)
-// =======================
-function loginStudent(){
-
-let data = {
-action: "login",
-email: document.getElementById("loginEmail").value,
-password: document.getElementById("loginPassword").value
-};
-
-fetch("https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec", {
-method: "POST",
-body: JSON.stringify(data)
+// LOGIN
+function login(){
+fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"login",
+email:loginEmail.value,
+password:loginPass.value
 })
-.then(res => res.json())
-.then(res => {
-
-if(res.status === "success"){
-
-localStorage.setItem("student", JSON.stringify(res.student));
-
-alert("Login Successful");
-
-window.location.href = "dashboard.html";
-
-} else {
-alert("Invalid email or password");
+}).then(r=>r.json()).then(d=>{
+if(d.status=="success"){
+localStorage.setItem("user",JSON.stringify(d.student));
+show("dash");
+document.getElementById("studentData").innerHTML=
+JSON.stringify(d.student,null,2);
+}else{
+alert("Wrong login");
 }
-
-})
-.catch(err => {
-alert("Connection error");
-console.log(err);
 });
-
 }
 
-// CLEAR FORM
-function clearForm(){
-fullName.value="";
-email.value="";
-phone.value="";
-institution.value="";
-password.value="";
-preview.style.display="none";
+// FORGOT PASSWORD
+function forgot(){
+fetch(API,{
+method:"POST",
+body:JSON.stringify({
+action:"forgot",
+email:forgotEmail.value
+})
+}).then(r=>r.json()).then(d=>{
+alert(d.message);
+});
 }
 
-// TUTOR LOGIN
-function tutorLogin(){
+// TUTOR LOAD
+function loadStudents(){
+fetch(API,{
+method:"POST",
+body:JSON.stringify({action:"getStudents"})
+}).then(r=>r.json()).then(d=>{
+document.getElementById("studentsList").innerText=
+JSON.stringify(d,null,2);
+});
+}
 
-if(username.value==="admin" && tpass.value==="1234" && access.value==="DPR2026"){
-alert("Tutor Login Successful");
-} else {
-alert("Invalid Credentials");
+function logout(){
+localStorage.clear();
+show("login");
 }
-}
+
+</script>
+
+</body>
+</html>
