@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DERKAT PREMIUM REVISIONS</title>
+<title>DERKAT DASHBOARD</title>
 
 <style>
 body{
@@ -11,12 +10,12 @@ font-family:Arial;
 margin:0;
 background:#0f172a;
 color:white;
+padding:20px;
 }
 
 .container{
 max-width:900px;
 margin:auto;
-padding:20px;
 }
 
 .card{
@@ -27,285 +26,86 @@ margin:10px 0;
 border-radius:10px;
 }
 
-input, select{
-width:100%;
-padding:10px;
-margin:6px 0;
-border-radius:6px;
-border:1px solid #ccc;
-}
-
 button{
-width:100%;
 padding:10px;
-margin-top:10px;
-background:#16a34a;
-border:none;
-color:white;
-border-radius:6px;
-cursor:pointer;
-}
-
-.hidden{display:none;}
-
-.logout{
 background:red;
-width:auto;
-padding:8px 15px;
-border:none;
 color:white;
+border:none;
 border-radius:6px;
 cursor:pointer;
 }
-
-h2{text-align:center;}
 </style>
 </head>
 
-<body>
+<body onload="loadDashboard()">
 
 <div class="container">
 
-<h2>DERKAT PREMIUM REVISIONS</h2>
+<h2>DERKAT DASHBOARD</h2>
 
-<!-- LOGOUT -->
-<div id="logoutBox" class="hidden">
-<button class="logout" onclick="logout()">Logout</button>
-</div>
+<div id="content"></div>
 
-<!-- MAIN MENU (ALWAYS VISIBLE FIRST) -->
-<div class="card" id="menuBox">
-
-<h2>Welcome</h2>
-
-<button onclick="showRegister()">Create Account</button>
-<button onclick="showStudentLogin()">Student Login</button>
-<button onclick="showTutorLogin()">Admin / Tutor Login</button>
-
-</div>
-
-<!-- REGISTER -->
-<div class="card hidden" id="registerBox">
-
-<h2>Student Registration</h2>
-
-<input type="text" id="studentId" readonly>
-
-<input type="text" id="fullName" placeholder="Full Name">
-<input type="email" id="email" placeholder="Email">
-<input type="text" id="phone" placeholder="Phone Number">
-
-<select id="gender">
-<option>Male</option>
-<option>Female</option>
-</select>
-
-<input type="text" id="institution" placeholder="Institution">
-
-<select id="program">
-<option>Diploma in Clinical Medicine</option>
-<option>Degree in Clinical Medicine</option>
-<option>Nursing</option>
-</select>
-
-<select id="semester">
-<option>Semester 1</option>
-<option>Semester 2</option>
-<option>Semester 3</option>
-<option>Semester 4</option>
-<option>Semester 5</option>
-<option>Semester 6</option>
-</select>
-
-<input type="password" id="password" placeholder="Create Password">
-
-<button onclick="registerStudent()">Register</button>
-<button onclick="backMenu()">Back</button>
-
-</div>
-
-<!-- STUDENT LOGIN -->
-<div class="card hidden" id="studentLoginBox">
-
-<h2>Student Login</h2>
-
-<input type="email" id="sEmail" placeholder="Email">
-<input type="password" id="sPass" placeholder="Password">
-
-<button onclick="studentLogin()">Login</button>
-<button onclick="backMenu()">Back</button>
-
-</div>
-
-<!-- TUTOR LOGIN -->
-<div class="card hidden" id="tutorLoginBox">
-
-<h2>Admin / Tutor Login</h2>
-
-<input type="text" id="tEmail" placeholder="admin">
-<input type="password" id="tPass" placeholder="1234">
-
-<button onclick="tutorLogin()">Login</button>
-<button onclick="backMenu()">Back</button>
-
-</div>
-
-<!-- STUDENT DASHBOARD -->
-<div class="card hidden" id="dashBox">
-
-<h2>Student Dashboard</h2>
-<div id="dashData"></div>
-
-</div>
-
-<!-- TUTOR DASHBOARD -->
-<div class="card hidden" id="tutorBox">
-
-<h2>Tutor Dashboard</h2>
-
-<button onclick="loadStudents()">Load Students</button>
-
-<div id="studentsList"></div>
-
-</div>
+<button onclick="logout()">Logout</button>
 
 </div>
 
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec";
+function loadDashboard(){
 
-/* ALWAYS START HERE */
-window.onload = function(){
-backMenu();
-generateID();
-};
+let role = localStorage.getItem("role");
+let user = JSON.parse(localStorage.getItem("user") || "{}");
 
-/* SAFE NAV */
-function hideAll(){
-["menuBox","registerBox","studentLoginBox","tutorLoginBox","dashBox","tutorBox","logoutBox"]
-.forEach(id=>{
-let el=document.getElementById(id);
-if(el) el.classList.add("hidden");
-});
-}
-
-function backMenu(){
-hideAll();
-document.getElementById("menuBox").classList.remove("hidden");
-}
-
-/* AUTO ID */
-function generateID(){
-let el=document.getElementById("studentId");
-if(el) el.value="DPR-" + Date.now();
-}
-
-/* NAV OPEN */
-function showRegister(){
-hideAll();
-document.getElementById("registerBox").classList.remove("hidden");
-generateID();
-}
-
-function showStudentLogin(){
-hideAll();
-document.getElementById("studentLoginBox").classList.remove("hidden");
-}
-
-function showTutorLogin(){
-hideAll();
-document.getElementById("tutorLoginBox").classList.remove("hidden");
-}
-
-/* REGISTER */
-function registerStudent(){
-
-fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"register",
-fullName:fullName.value,
-email:email.value,
-phone:phone.value,
-gender:gender.value,
-institution:institution.value,
-program:program.value,
-semester:semester.value,
-password:password.value
-})
-})
-.then(r=>r.json())
-.then(res=>{
-alert("Registered ID: " + res.studentId);
-backMenu();
-});
-}
-
-/* STUDENT LOGIN */
-function studentLogin(){
-
-fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"login",
-email:sEmail.value,
-password:sPass.value
-})
-})
-.then(r=>r.json())
-.then(res=>{
-
-if(res.status!=="success"){
-alert("Login failed");
+if(!role){
+window.location.href = "index.html";
 return;
 }
 
-localStorage.setItem("role","student");
-localStorage.setItem("user",JSON.stringify(res.user));
+/* STUDENT DASHBOARD */
+if(role === "student"){
 
-document.getElementById("dashData").innerHTML=`
-<h3>Welcome ${res.user.fullName}</h3>
-<p>${res.user.program}</p>
-<p>Semester ${res.user.semester}</p>
-<p>Status: ${res.user.premium}</p>
+document.getElementById("content").innerHTML = `
+<div class="card">
+<h3>Student Dashboard</h3>
+<p><b>Name:</b> ${user.fullName}</p>
+<p><b>Email:</b> ${user.email}</p>
+<p><b>Program:</b> ${user.program}</p>
+<p><b>Semester:</b> ${user.semester}</p>
+<p><b>Status:</b> ${user.premium}</p>
+</div>
 `;
 
-hideAll();
-document.getElementById("dashBox").classList.remove("hidden");
-document.getElementById("logoutBox").classList.remove("hidden");
-
-});
 }
 
-/* TUTOR LOGIN */
-function tutorLogin(){
+/* TUTOR DASHBOARD */
+if(role === "tutor"){
 
-if(tEmail.value==="admin" && tPass.value==="1234"){
+document.getElementById("content").innerHTML = `
+<div class="card">
+<h3>Tutor Dashboard</h3>
+<p>Welcome Admin</p>
 
-localStorage.setItem("role","tutor");
+<button onclick="loadStudents()">Load Students</button>
 
-hideAll();
-document.getElementById("tutorBox").classList.remove("hidden");
-document.getElementById("logoutBox").classList.remove("hidden");
+<div id="students"></div>
+</div>
+`;
 
-}else{
-alert("Invalid login");
 }
 
 }
 
-/* LOAD STUDENTS */
+/* LOAD STUDENTS (TUTOR ONLY) */
 function loadStudents(){
 
-fetch(API_URL,{
+fetch("https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec",{
 method:"POST",
 body:JSON.stringify({action:"getStudents"})
 })
 .then(r=>r.json())
 .then(data=>{
 
-document.getElementById("studentsList").innerHTML =
+document.getElementById("students").innerHTML =
 data.map(s=>`
 <div class="card">
 <b>${s.fullName}</b><br>
@@ -322,7 +122,7 @@ Status: ${s.premium}
 /* LOGOUT */
 function logout(){
 localStorage.clear();
-backMenu();
+window.location.href = "index.html";
 }
 
 </script>
