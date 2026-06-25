@@ -181,7 +181,7 @@ img.src = URL.createObjectURL(event.target.files[0]);
 img.style.display="block";
 }
 
-// REGISTER
+// REGISTER (GOOGLE SHEETS VERSION)
 function registerStudent(){
 
 if(!fullName.value || !email.value || !phone.value){
@@ -190,24 +190,38 @@ return;
 }
 
 let student = {
-id: studentId.value,
-name: fullName.value,
+studentId: studentId.value,
+fullName: fullName.value,
 email: email.value,
 phone: phone.value,
 gender: gender.value,
 institution: institution.value,
 program: program.value,
-semester: semester.value
+semester: semester.value,
+password: password.value
 };
 
-let data = JSON.parse(localStorage.getItem("students") || "[]");
-data.push(student);
-localStorage.setItem("students", JSON.stringify(data));
+fetch("https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec", {
+method: "POST",
+body: JSON.stringify(student)
+})
+.then(res => res.json())
+.then(data => {
 
-alert("Student Registered Successfully");
-
+if(data.status === "success"){
+alert("Registration Successful!\nYour Student ID: " + data.studentId);
 clearForm();
 generateID();
+} else {
+alert("Registration failed");
+}
+
+})
+.catch(error => {
+alert("Error connecting to server");
+console.log(error);
+});
+
 }
 
 // CLEAR FORM
