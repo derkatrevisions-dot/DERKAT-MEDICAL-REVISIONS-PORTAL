@@ -46,13 +46,17 @@ border-radius:6px;
 cursor:pointer;
 }
 
-.nav button{
-width:auto;
-margin:5px;
-background:#334155;
-}
-
 .hidden{display:none;}
+
+.logout{
+background:red;
+width:auto;
+padding:8px 15px;
+border:none;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
 
 h2{text-align:center;}
 </style>
@@ -64,17 +68,24 @@ h2{text-align:center;}
 
 <h2>DERKAT PREMIUM REVISIONS</h2>
 
-<!-- NAV -->
-<div class="nav">
-<button onclick="show('register')">Register</button>
-<button onclick="show('login')">Login</button>
-<button onclick="show('forgot')">Forgot</button>
-<button onclick="show('tutor')">Tutor</button>
-<button onclick="show('dash')">Dashboard</button>
+<!-- LOGOUT -->
+<div id="logoutBox" class="hidden">
+<button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<!-- MAIN MENU (ALWAYS VISIBLE FIRST) -->
+<div class="card" id="menuBox">
+
+<h2>Welcome</h2>
+
+<button onclick="showRegister()">Create Account</button>
+<button onclick="showStudentLogin()">Student Login</button>
+<button onclick="showTutorLogin()">Admin / Tutor Login</button>
+
 </div>
 
 <!-- REGISTER -->
-<div class="card" id="registerBox">
+<div class="card hidden" id="registerBox">
 
 <h2>Student Registration</h2>
 
@@ -108,64 +119,53 @@ h2{text-align:center;}
 
 <input type="password" id="password" placeholder="Create Password">
 
-<button onclick="registerStudent()">Register Student</button>
+<button onclick="registerStudent()">Register</button>
+<button onclick="backMenu()">Back</button>
 
 </div>
 
-<!-- LOGIN -->
-<div class="card hidden" id="loginBox">
+<!-- STUDENT LOGIN -->
+<div class="card hidden" id="studentLoginBox">
 
 <h2>Student Login</h2>
 
-<input type="email" id="loginEmail" placeholder="Email">
-<input type="password" id="loginPassword" placeholder="Password">
+<input type="email" id="sEmail" placeholder="Email">
+<input type="password" id="sPass" placeholder="Password">
 
-<button onclick="loginStudent()">Login</button>
-
-</div>
-
-<!-- FORGOT -->
-<div class="card hidden" id="forgotBox">
-
-<h2>Forgot Password</h2>
-
-<input type="email" id="forgotEmail" placeholder="Enter Email">
-
-<button onclick="forgotPassword()">Reset Password</button>
+<button onclick="studentLogin()">Login</button>
+<button onclick="backMenu()">Back</button>
 
 </div>
 
-<!-- DASHBOARD -->
+<!-- TUTOR LOGIN -->
+<div class="card hidden" id="tutorLoginBox">
+
+<h2>Admin / Tutor Login</h2>
+
+<input type="text" id="tEmail" placeholder="admin">
+<input type="password" id="tPass" placeholder="1234">
+
+<button onclick="tutorLogin()">Login</button>
+<button onclick="backMenu()">Back</button>
+
+</div>
+
+<!-- STUDENT DASHBOARD -->
 <div class="card hidden" id="dashBox">
 
 <h2>Student Dashboard</h2>
 <div id="dashData"></div>
 
-<button onclick="logout()">Logout</button>
-
 </div>
 
-<!-- TUTOR -->
+<!-- TUTOR DASHBOARD -->
 <div class="card hidden" id="tutorBox">
 
-<h2>Tutor Panel</h2>
+<h2>Tutor Dashboard</h2>
 
 <button onclick="loadStudents()">Load Students</button>
 
 <div id="studentsList"></div>
-
-<hr>
-
-<h3>Update Student Status</h3>
-
-<input type="text" id="studentEmail" placeholder="Student Email">
-
-<select id="premiumStatus">
-<option value="FREE">FREE</option>
-<option value="PREMIUM">PREMIUM</option>
-</select>
-
-<button onclick="updatePremium()">Update Status</button>
 
 </div>
 
@@ -175,21 +175,48 @@ h2{text-align:center;}
 
 const API_URL = "https://script.google.com/macros/s/AKfycbw3A3X0Gwz1W9Ie6PPY9tagtEAx_08kAu8FOmUoRRll8YpnCaO7cr5dxqZZI0TTfSYi/exec";
 
-/* NAV */
-function show(page){
-["registerBox","loginBox","forgotBox","dashBox","tutorBox"].forEach(id=>{
-document.getElementById(id).classList.add("hidden");
-});
+/* ALWAYS START HERE */
+window.onload = function(){
+backMenu();
+generateID();
+};
 
-document.getElementById(page+"Box").classList.remove("hidden");
+/* SAFE NAV */
+function hideAll(){
+["menuBox","registerBox","studentLoginBox","tutorLoginBox","dashBox","tutorBox","logoutBox"]
+.forEach(id=>{
+let el=document.getElementById(id);
+if(el) el.classList.add("hidden");
+});
+}
+
+function backMenu(){
+hideAll();
+document.getElementById("menuBox").classList.remove("hidden");
 }
 
 /* AUTO ID */
 function generateID(){
-document.getElementById("studentId").value =
-"DPR-" + Date.now();
+let el=document.getElementById("studentId");
+if(el) el.value="DPR-" + Date.now();
 }
+
+/* NAV OPEN */
+function showRegister(){
+hideAll();
+document.getElementById("registerBox").classList.remove("hidden");
 generateID();
+}
+
+function showStudentLogin(){
+hideAll();
+document.getElementById("studentLoginBox").classList.remove("hidden");
+}
+
+function showTutorLogin(){
+hideAll();
+document.getElementById("tutorLoginBox").classList.remove("hidden");
+}
 
 /* REGISTER */
 function registerStudent(){
@@ -210,61 +237,61 @@ password:password.value
 })
 .then(r=>r.json())
 .then(res=>{
-alert("Registered ID: "+res.studentId);
-generateID();
+alert("Registered ID: " + res.studentId);
+backMenu();
 });
 }
 
-/* LOGIN */
-function loginStudent(){
+/* STUDENT LOGIN */
+function studentLogin(){
 
 fetch(API_URL,{
 method:"POST",
 body:JSON.stringify({
 action:"login",
-email:loginEmail.value,
-password:loginPassword.value
+email:sEmail.value,
+password:sPass.value
 })
 })
 .then(r=>r.json())
 .then(res=>{
 
-if(res.status==="success"){
+if(res.status!=="success"){
+alert("Login failed");
+return;
+}
 
-localStorage.setItem("student",JSON.stringify(res.student));
+localStorage.setItem("role","student");
+localStorage.setItem("user",JSON.stringify(res.user));
 
 document.getElementById("dashData").innerHTML=`
-<h3>Welcome ${res.student.fullName}</h3>
-<p>ID: ${res.student.studentId}</p>
-<p>Email: ${res.student.email}</p>
-<p>Program: ${res.student.program}</p>
-<p>Semester: ${res.student.semester}</p>
-<p>Status: ${res.student.premium}</p>
+<h3>Welcome ${res.user.fullName}</h3>
+<p>${res.user.program}</p>
+<p>Semester ${res.user.semester}</p>
+<p>Status: ${res.user.premium}</p>
 `;
 
-show("dash");
+hideAll();
+document.getElementById("dashBox").classList.remove("hidden");
+document.getElementById("logoutBox").classList.remove("hidden");
+
+});
+}
+
+/* TUTOR LOGIN */
+function tutorLogin(){
+
+if(tEmail.value==="admin" && tPass.value==="1234"){
+
+localStorage.setItem("role","tutor");
+
+hideAll();
+document.getElementById("tutorBox").classList.remove("hidden");
+document.getElementById("logoutBox").classList.remove("hidden");
 
 }else{
-alert("Login failed");
+alert("Invalid login");
 }
-
-});
-}
-
-/* FORGOT */
-function forgotPassword(){
-
-fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"forgot",
-email:forgotEmail.value
-})
-})
-.then(r=>r.json())
-.then(res=>{
-alert(res.message);
-});
 
 }
 
@@ -283,7 +310,7 @@ data.map(s=>`
 <div class="card">
 <b>${s.fullName}</b><br>
 ${s.email}<br>
-${s.program} - Sem ${s.semester}<br>
+${s.program}<br>
 Status: ${s.premium}
 </div>
 `).join("");
@@ -292,29 +319,10 @@ Status: ${s.premium}
 
 }
 
-/* UPDATE PREMIUM */
-function updatePremium(){
-
-fetch(API_URL,{
-method:"POST",
-body:JSON.stringify({
-action:"updatePremium",
-email:studentEmail.value,
-status:premiumStatus.value
-})
-})
-.then(r=>r.json())
-.then(res=>{
-alert(res.message);
-loadStudents();
-});
-
-}
-
 /* LOGOUT */
 function logout(){
 localStorage.clear();
-show("login");
+backMenu();
 }
 
 </script>
